@@ -3,6 +3,7 @@ use std::{
     collections::HashSet,
     fmt::Debug,
     hash::Hash,
+    iter::Sum,
     ops::{Add, Div, Mul, Neg, Sub},
     rc::Rc,
 };
@@ -50,30 +51,31 @@ impl Hash for Tensor {
 }
 
 impl Tensor {
-    pub fn new(data: f64, label: &str) -> Self {
-        Tensor(Rc::new(RefCell::new(TensorData {
-            data,
-            grad: 0.0,
-            label: label.into(),
-            _backward: None,
-            _prev: vec![],
-            _op: Operation::None,
-        })))
-    }
-
-    fn new_with_operation(data: f64, operation: Operation) -> Self {
+    pub fn new(data: f64) -> Self {
         Tensor(Rc::new(RefCell::new(TensorData {
             data,
             grad: 0.0,
             label: String::new(),
             _backward: None,
             _prev: vec![],
-            _op: operation,
+            _op: Operation::None,
         })))
     }
 
+    pub fn new_with_label(data: f64, label: &str) -> Self {
+        let tensor = Self::new(data);
+        tensor.0.borrow_mut().label = label.into();
+        tensor
+    }
+
+    fn new_with_operation(data: f64, operation: Operation) -> Self {
+        let tensor = Self::new(data);
+        tensor.0.borrow_mut()._op = operation;
+        tensor
+    }
+
     pub fn from_vec(datas: Vec<f64>) -> Vec<Self> {
-        datas.iter().map(|d| Tensor::new(*d, "")).collect()
+        datas.iter().map(|d| Tensor::new(*d)).collect()
     }
 
     // 데이터 조회
@@ -134,7 +136,6 @@ impl Tensor {
         }
     }
 
-    // activation functions -> to trait?
     pub fn tanh(&self) -> Tensor {
         let e_2x = (self.data() * 2.0).exp();
         let out = Tensor::new_with_operation((e_2x - 1.0) / (e_2x + 1.0), Operation::Tanh);
@@ -154,7 +155,7 @@ impl Tensor {
 
     // i64 or f64
     pub fn pow(&self, rhs: f64) -> Tensor {
-        let rhs = Tensor::new(rhs, "temp");
+        let rhs = Tensor::new(rhs);
         let out = Tensor::new_with_operation(self.data().powf(rhs.data()), Operation::Pow);
         out.0.borrow_mut()._prev = vec![self.clone(), rhs.clone()];
 
@@ -174,7 +175,6 @@ impl Tensor {
     pub fn exp(&self) -> Tensor {
         let x = self.data();
         let out = Tensor::new_with_operation(x.exp(), Operation::Exp);
-
         out.0.borrow_mut()._prev = vec![self.clone()];
 
         fn _backward(out: &Tensor) {
@@ -184,7 +184,6 @@ impl Tensor {
             }
         }
 
-        // 빠져있었음..
         out.0.borrow_mut()._backward = Some(_backward);
 
         out
@@ -243,7 +242,7 @@ impl Add<f64> for Tensor {
     type Output = Tensor;
 
     fn add(self, rhs: f64) -> Self::Output {
-        let rhs = Tensor::new(rhs, "temp");
+        let rhs = Tensor::new(rhs);
         &self + &rhs
     }
 }
@@ -252,8 +251,17 @@ impl Add<f64> for &Tensor {
     type Output = Tensor;
 
     fn add(self, rhs: f64) -> Self::Output {
-        let rhs = Tensor::new(rhs, "temp");
+        let rhs = Tensor::new(rhs);
         self + &rhs
+    }
+}
+
+impl Add<&Tensor> for f64 {
+    type Output = Tensor;
+
+    fn add(self, rhs: &Tensor) -> Self::Output {
+        let temp = Tensor::new(self);
+        &temp + rhs
     }
 }
 
@@ -267,7 +275,6 @@ impl Mul for &Tensor {
 
         fn _backward(out: &Tensor) {
             let prev = out.prev();
-            // TODO: TEST, 무조건 2개 나오는지
             let l = &prev[0];
             let r = &prev[1];
             l.set_grad(l.grad() + r.data() * out.grad());
@@ -308,7 +315,7 @@ impl Mul<f64> for Tensor {
     type Output = Tensor;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        let rhs = Tensor::new(rhs, "temp");
+        let rhs = Tensor::new(rhs);
         &self * rhs
     }
 }
@@ -317,7 +324,7 @@ impl Mul<f64> for &Tensor {
     type Output = Tensor;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        let rhs = Tensor::new(rhs, "temp");
+        let rhs = Tensor::new(rhs);
         self * rhs
     }
 }
@@ -327,7 +334,7 @@ impl Mul<Tensor> for f64 {
     type Output = Tensor;
 
     fn mul(self, rhs: Tensor) -> Self::Output {
-        let temp = Tensor::new(self, "temp");
+        let temp = Tensor::new(self);
         temp * rhs
     }
 }
@@ -336,7 +343,7 @@ impl Mul<&Tensor> for f64 {
     type Output = Tensor;
 
     fn mul(self, rhs: &Tensor) -> Self::Output {
-        let temp = Tensor::new(self, "temp");
+        let temp = Tensor::new(self);
         temp * rhs
     }
 }
@@ -346,8 +353,6 @@ impl Div for &Tensor {
     type Output = Tensor;
 
     fn div(self, rhs: Self) -> Self::Output {
-        // true div of a/b = a * b**-1
-        // let rhs = Tensor::new(rhs.data().powi(-1), "temp");
         self * rhs.pow(-1.0)
     }
 }
@@ -368,13 +373,13 @@ impl Neg for &Tensor {
         let out = Tensor::new_with_operation(-self.data(), Operation::Neg);
         out.0.borrow_mut()._prev = vec![self.clone()];
 
-        // fn _backward(out: &Tensor) {
-        //     let prev = out.prev();
-        //     for p in prev {
-        //         p.set_grad(p.grad() + -1.0 * out.grad());
-        //     }
-        // }
-        // out.0.borrow_mut()._backward = Some(_backward);
+        fn _backward(out: &Tensor) {
+            let prev = out.prev();
+            for p in prev {
+                p.set_grad(p.grad() + -1.0 * out.grad());
+            }
+        }
+        out.0.borrow_mut()._backward = Some(_backward);
 
         out
     }
@@ -396,13 +401,19 @@ impl Sub<f64> for &Tensor {
     }
 }
 
-// impl Sub<Tensor> for f64 {
-//     type Output = Tensor;
+impl Sub<&Tensor> for f64 {
+    type Output = Tensor;
 
-//     fn sub(self, rhs: Tensor) -> Self::Output {
+    fn sub(self, rhs: &Tensor) -> Self::Output {
+        self + &(-rhs)
+    }
+}
 
-//     }
-// }
+impl Sum for Tensor {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Tensor::new(0.0), |acc, x| &acc + &x)
+    }
+}
 
 pub trait Activation {
     fn tanh(&self) -> Tensor;

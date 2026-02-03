@@ -2,13 +2,13 @@ use rust_micrograd::engine::Tensor;
 
 #[test]
 fn test() {
-    let a = Tensor::new(2.0, "a"); // grad: 6.0
+    let a = Tensor::new_with_label(2.0, "a"); // grad: 6.0
     a.set_label("a");
-    let b = Tensor::new(-3.0, "b"); // grad: -2.0*2.0 = -4.0
+    let b = Tensor::new_with_label(-3.0, "b"); // grad: -2.0*2.0 = -4.0
     b.set_label("b");
-    let c = Tensor::new(10.0, "c"); // grad: -2.0
+    let c = Tensor::new_with_label(10.0, "c"); // grad: -2.0
     c.set_label("c");
-    let f = Tensor::new(-2.0, "f"); // grad: 4.0
+    let f = Tensor::new_with_label(-2.0, "f"); // grad: 4.0
     f.set_label("f");
 
     // leaf nodes에서 학습률 0.01을 grad에 곱하여 data에 더해주면,

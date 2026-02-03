@@ -15,17 +15,13 @@ pub struct Neuron(Rc<RefCell<NeuronData>>);
 impl Neuron {
     pub fn new(n: usize) -> Self {
         let mut rng = rand::rng();
-        // let mut weights = Vec::with_capacity(n);
-        // for _ in 0..n {
-        //     weights.push(Tensor::new(rng.random_range(-1.0..1.0), ""));
-        // }
         let weights = (0..n)
-            .map(|_| Tensor::new(rng.random_range(-1.0..1.0), ""))
+            .map(|_| Tensor::new(rng.random_range(-1.0..1.0)))
             .collect();
 
         Self(Rc::new(RefCell::new(NeuronData {
             weights,
-            bias: Tensor::new(rng.random_range(-1.0..1.0), ""),
+            bias: Tensor::new(rng.random_range(-1.0..1.0)),
         })))
     }
 
@@ -41,16 +37,8 @@ impl Neuron {
         [self.weights(), vec![self.bias()]].concat()
     }
 
-    // __call__ method does not exists
     pub fn forward(&self, x: &Vec<Tensor>) -> Tensor {
-        // do not need to make a tensor by default
-        // because, it already implements Add<f64> with Tensor
-        // and, it makes additional calculation fee.
-        // but, when we use the multiple layer, the input x would be tensors.
-        let data = zip(self.weights(), x)
-            .map(|(w, x)| w * x)
-            .fold(Tensor::new(0.0, "temp"), |acc, wx| acc + wx)
-            + self.bias();
+        let data = zip(self.weights(), x).map(|(w, x)| w * x).sum::<Tensor>() + self.bias();
 
         data.tanh()
     }
@@ -108,9 +96,7 @@ pub struct MLPData {
 pub struct MLP(Rc<RefCell<MLPData>>);
 
 impl MLP {
-    // Vec<Sizes>
     pub fn new(n_in: usize, n_outs: Vec<usize>) -> Self {
-        // first input, next output
         let nodes = [vec![n_in], n_outs].concat();
         let mut layers = Vec::new();
         for i in 0..nodes.len() - 1 {
@@ -129,10 +115,6 @@ impl MLP {
     }
 
     pub fn forward(&self, x: &Vec<Tensor>) -> Vec<Tensor> {
-        // for l in self.layers() {
-        //     let x = l.forward(x);
-        // }
-        // backward가 되려나? 된다.
         self.layers()
             .iter()
             .fold(x.clone(), |acc, l| l.forward(&acc))
@@ -141,7 +123,6 @@ impl MLP {
 
 pub trait Module {
     fn zero_grad(&self);
-    // fn.update();
 }
 
 impl Module for MLP {

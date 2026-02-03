@@ -62,8 +62,7 @@ fn test_back_propagation() {
         .map(|(y, y_pred)| (&y_pred[0] - *y).pow(2.0))
         .collect();
     println!("---- Costs ----\n{:?}\n\n", costs);
-    let mut loss = costs.iter().fold(Tensor::new(0.0, ""), |acc, x| &acc + x);
-    // fold로 매번 하기보다 Sum을 구현하는게 나을듯
+    let mut loss = costs.iter().fold(Tensor::new(0.0), |acc, x| &acc + x);
     println!("---- Loss ----\n{:?}\n\n", loss);
 
     loss.backward();
@@ -94,9 +93,10 @@ fn test_back_propagation() {
             .iter()
             .map(|x| n.forward(x))
             .collect::<Vec<Vec<Tensor>>>();
+
         loss = zip(&ys, y_preds)
             .map(|(y, y_pred)| (&y_pred[0] - *y).pow(2.0))
-            .fold(Tensor::new(0.0, ""), |acc, x| acc + x);
+            .sum();
 
         // zero_grad
         // for layer_params in &n.parameters() {

@@ -3,14 +3,14 @@ use rust_micrograd::engine::Tensor;
 #[test]
 fn test() {
     // inputs
-    let x1 = Tensor::new(2.0, "x1");
-    let x2 = Tensor::new(0.0, "x2");
+    let x1 = Tensor::new_with_label(2.0, "x1");
+    let x2 = Tensor::new_with_label(0.0, "x2");
 
     // weights
-    let w1 = Tensor::new(-3.0, "w1");
-    let w2 = Tensor::new(1.0, "w2");
+    let w1 = Tensor::new_with_label(-3.0, "w1");
+    let w2 = Tensor::new_with_label(1.0, "w2");
     // bias
-    let b = Tensor::new(6.88137358, "b");
+    let b = Tensor::new_with_label(6.88137358, "b");
 
     // x1*w1 + x2*w2 + b
     let x1w1 = &x1 * &w1;
@@ -59,14 +59,14 @@ fn test() {
 #[test]
 fn test_backward() {
     // inputs
-    let x1 = Tensor::new(2.0, "x1");
-    let x2 = Tensor::new(0.0, "x2");
+    let x1 = Tensor::new_with_label(2.0, "x1");
+    let x2 = Tensor::new_with_label(0.0, "x2");
 
     // weights
-    let w1 = Tensor::new(-3.0, "w1");
-    let w2 = Tensor::new(1.0, "w2");
+    let w1 = Tensor::new_with_label(-3.0, "w1");
+    let w2 = Tensor::new_with_label(1.0, "w2");
     // bias
-    let b = Tensor::new(6.88137358, "b");
+    let b = Tensor::new_with_label(6.88137358, "b");
 
     // x1*w1 + x2*w2 + b
     let x1w1 = &x1 * &w1;
@@ -109,14 +109,14 @@ fn test_backward() {
 #[test]
 fn test_back_propagation() {
     // inputs
-    let x1 = Tensor::new(2.0, "x1");
-    let x2 = Tensor::new(0.0, "x2");
+    let x1 = Tensor::new_with_label(2.0, "x1");
+    let x2 = Tensor::new_with_label(0.0, "x2");
 
     // weights
-    let w1 = Tensor::new(-3.0, "w1");
-    let w2 = Tensor::new(1.0, "w2");
+    let w1 = Tensor::new_with_label(-3.0, "w1");
+    let w2 = Tensor::new_with_label(1.0, "w2");
     // bias
-    let b = Tensor::new(6.88137358, "b");
+    let b = Tensor::new_with_label(6.88137358, "b");
 
     // x1*w1 + x2*w2 + b
     let x1w1 = &x1 * &w1;
@@ -150,7 +150,7 @@ fn test_back_propagation() {
 
 #[test]
 fn test_same_node() {
-    let a = Tensor::new(3.0, "a");
+    let a = Tensor::new_with_label(3.0, "a");
     let b = &a + &a;
     b.set_label("b");
 
@@ -162,8 +162,8 @@ fn test_same_node() {
 
     println!("\n{}\n", "-".repeat(36));
 
-    let a = Tensor::new(-2.0, "a");
-    let b = Tensor::new(3.0, "b");
+    let a = Tensor::new_with_label(-2.0, "a");
+    let b = Tensor::new_with_label(3.0, "b");
     let d = &a * &b;
     d.set_label("d");
     let e = &a + &b;
@@ -186,14 +186,14 @@ fn test_same_node() {
 #[test]
 fn test_operators() {
     // inputs
-    let x1 = Tensor::new(2.0, "x1");
-    let x2 = Tensor::new(0.0, "x2");
+    let x1 = Tensor::new_with_label(2.0, "x1");
+    let x2 = Tensor::new_with_label(0.0, "x2");
 
     // weights
-    let w1 = Tensor::new(-3.0, "w1");
-    let w2 = Tensor::new(1.0, "w2");
+    let w1 = Tensor::new_with_label(-3.0, "w1");
+    let w2 = Tensor::new_with_label(1.0, "w2");
     // bias
-    let b = Tensor::new(6.88137358, "b");
+    let b = Tensor::new_with_label(6.88137358, "b");
 
     // x1*w1 + x2*w2 + b
     let x1w1 = &x1 * &w1;
