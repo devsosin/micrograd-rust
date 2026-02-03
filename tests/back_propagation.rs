@@ -1,20 +1,21 @@
 use rust_micrograd::engine::Tensor;
 
 #[test]
-pub fn test() {
+fn test() {
     let a = Tensor::new(2.0, "a");
     a.set_label("a");
     let b = Tensor::new(-3.0, "b");
     b.set_label("b");
     let c = Tensor::new(10.0, "c");
     c.set_label("c");
-    let e = &a * &b;
+    let e = &a * b;
     e.set_label("e");
-    let d = &e + &c;
+    println!("{:?}", a);
+    let d = e + c;
     d.set_label("d");
     let f = Tensor::new(-2.0, "f");
     f.set_label("f");
-    let L = &d * &f;
+    let L = d * f;
     L.set_label("L");
     println!("{:?}", L);
     println!("{:?}", L.prev());
@@ -36,14 +37,14 @@ pub fn test() {
     b.set_label("b");
     let c = Tensor::new(10.0, "c");
     c.set_label("c");
-    let e = &a * &b;
+    let e = a * b;
     e.set_label("e");
-    let d = &e + &c;
+    let d = e + c;
     d.set_label("d");
     d.set_data(d.data());
     let f = Tensor::new(-2.0, "f");
     f.set_label("f");
-    let L1 = &d * &f;
+    let L1 = d * f;
 
     let a = Tensor::new(2.0, "a");
     a.set_label("a");
@@ -51,14 +52,14 @@ pub fn test() {
     b.set_label("b");
     let c = Tensor::new(10.0, "c");
     c.set_label("c");
-    let e = &a * &b;
+    let e = a * b;
     e.set_label("e");
-    let d = &e + &c;
+    let d = e + c;
     d.set_label("d");
     d.set_data(d.data() + h);
     let f = Tensor::new(-2.0, "f");
     f.set_label("f");
-    let L2 = &d * &f;
+    let L2 = d * f;
     let grad = (L2.data() - L1.data()) / h;
     println!("dL/dd grad: {}", grad);
 

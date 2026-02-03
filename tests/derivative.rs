@@ -3,7 +3,7 @@ fn f(x: f64) -> f64 {
 }
 
 #[test]
-pub fn test() {
+fn test() {
     // 미분 정의: 특정 한 점 x에서 h가 0에 한 없이 가까워 질 때 f(x+h)와 f(x)의 값의 차이 = 기울기
     // lim h->0
     // ( f(x+h) - f(x) ) / h

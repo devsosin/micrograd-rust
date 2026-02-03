@@ -1,7 +1,7 @@
 use rust_micrograd::engine::Tensor;
 
 #[test]
-pub fn test() {
+fn test() {
     let a = Tensor::new(2.0, "a"); // grad: 6.0
     a.set_label("a");
     let b = Tensor::new(-3.0, "b"); // grad: -2.0*2.0 = -4.0
