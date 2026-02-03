@@ -72,6 +72,10 @@ impl Tensor {
         })))
     }
 
+    pub fn from_vec(datas: Vec<f64>) -> Vec<Self> {
+        datas.iter().map(|d| Tensor::new(*d, "")).collect()
+    }
+
     // 데이터 조회
     pub fn data(&self) -> f64 {
         self.0.borrow().data
@@ -391,6 +395,14 @@ impl Sub<f64> for &Tensor {
         self + -rhs
     }
 }
+
+// impl Sub<Tensor> for f64 {
+//     type Output = Tensor;
+
+//     fn sub(self, rhs: Tensor) -> Self::Output {
+
+//     }
+// }
 
 pub trait Activation {
     fn tanh(&self) -> Tensor;
